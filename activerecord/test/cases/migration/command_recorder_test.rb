@@ -262,13 +262,13 @@ module ActiveRecord
       end
 
       def test_invert_enable_extension
-        disable = @recorder.inverse_of :enable_extension, ['uuid-ossp']
-        assert_equal [:disable_extension, ['uuid-ossp'], nil], disable
+        disable = @recorder.inverse_of :enable_extension, ['pgcrypto']
+        assert_equal [:disable_extension, ['pgcrypto'], nil], disable
       end
 
       def test_invert_disable_extension
-        enable = @recorder.inverse_of :disable_extension, ['uuid-ossp']
-        assert_equal [:enable_extension, ['uuid-ossp'], nil], enable
+        enable = @recorder.inverse_of :disable_extension, ['pgcrypto']
+        assert_equal [:enable_extension, ['pgcrypto'], nil], enable
       end
 
       def test_invert_add_foreign_key

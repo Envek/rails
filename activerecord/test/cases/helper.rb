@@ -114,9 +114,9 @@ end
 
 def enable_uuid_ossp!(connection)
   return false unless connection.supports_extensions?
-  return true if connection.extension_enabled?('uuid-ossp')
+  return true if connection.extension_enabled?('pgcrypto')
 
-  connection.enable_extension 'uuid-ossp'
+  connection.enable_extension 'pgcrypto'
   connection.commit_db_transaction
   connection.reconnect!
 end

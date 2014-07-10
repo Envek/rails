@@ -101,10 +101,10 @@ module ActiveRecord
         #     t.timestamps
         #   end
         #
-        # By default, this will use the +uuid_generate_v4()+ function from the
-        # +uuid-ossp+ extension, which MUST be enabled on your database. To enable
-        # the +uuid-ossp+ extension, you can use the +enable_extension+ method in your
-        # migrations. To use a UUID primary key without +uuid-ossp+ enabled, you can
+        # By default, this will use the +gen_random_uuid()+ function from the
+        # +pgcrypto+ extension, which MUST be enabled on your database. To enable
+        # the +pgcrypto+ extension, you can use the +enable_extension+ method in your
+        # migrations. To use a UUID primary key without +pgcrypto+ enabled, you can
         # set the +:default+ option to +nil+:
         #
         #   create_table :stuffs, id: false do |t|
@@ -122,7 +122,7 @@ module ActiveRecord
         # +SecureRandom.uuid+ method and a +before_save+ callback, for instance.
         def primary_key(name, type = :primary_key, options = {})
           return super unless type == :uuid
-          options[:default] = options.fetch(:default, 'uuid_generate_v4()')
+          options[:default] = options.fetch(:default, 'gen_random_uuid()')
           options[:primary_key] = true
           column name, type, options
         end

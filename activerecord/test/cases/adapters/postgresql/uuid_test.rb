@@ -32,16 +32,16 @@ class PostgresqlUUIDTest < ActiveRecord::TestCase
   end
 
   def test_change_column_default
-    @connection.add_column :uuid_data_type, :thingy, :uuid, null: false, default: "uuid_generate_v1()"
+    @connection.add_column :uuid_data_type, :thingy, :uuid, null: false, default: nil
     UUIDType.reset_column_information
     column = UUIDType.columns_hash['thingy']
-    assert_equal "uuid_generate_v1()", column.default_function
+    assert_equal nil, column.default_function
 
-    @connection.change_column :uuid_data_type, :thingy, :uuid, null: false, default: "uuid_generate_v4()"
+    @connection.change_column :uuid_data_type, :thingy, :uuid, null: false, default: 'gen_random_uuid()'
 
     UUIDType.reset_column_information
     column = UUIDType.columns_hash['thingy']
-    assert_equal "uuid_generate_v4()", column.default_function
+    assert_equal 'gen_random_uuid()', column.default_function
   ensure
     UUIDType.reset_column_information
   end
@@ -83,9 +83,9 @@ class PostgresqlUUIDGenerationTest < ActiveRecord::TestCase
   setup do
     enable_uuid_ossp!(connection)
 
-    connection.create_table('pg_uuids', id: :uuid, default: 'uuid_generate_v1()') do |t|
+    connection.create_table('pg_uuids', id: :uuid) do |t|
       t.string 'name'
-      t.uuid 'other_uuid', default: 'uuid_generate_v4()'
+      t.uuid 'other_uuid', default: 'gen_random_uuid()'
     end
   end
 
@@ -119,8 +119,8 @@ class PostgresqlUUIDGenerationTest < ActiveRecord::TestCase
     def test_schema_dumper_for_uuid_primary_key
       schema = StringIO.new
       ActiveRecord::SchemaDumper.dump(connection, schema)
-      assert_match(/\bcreate_table "pg_uuids", id: :uuid, default: "uuid_generate_v1\(\)"/, schema.string)
-      assert_match(/t\.uuid   "other_uuid", default: "uuid_generate_v4\(\)"/, schema.string)
+      assert_match(/\bcreate_table "pg_uuids", id: :uuid, default: "gen_random_uuid\(\)"/, schema.string)
+      assert_match(/t\.uuid   "other_uuid", default: "gen_random_uuid\(\)"/, schema.string)
     end
   end
 end
@@ -173,7 +173,7 @@ class PostgresqlUUIDTestInverseOf < ActiveRecord::TestCase
         t.string 'title'
       end
       connection.create_table('pg_uuid_comments', id: :uuid) do |t|
-        t.uuid :uuid_post_id, default: 'uuid_generate_v4()'
+        t.uuid :uuid_post_id, default: 'gen_random_uuid()'
         t.string 'content'
       end
     end
