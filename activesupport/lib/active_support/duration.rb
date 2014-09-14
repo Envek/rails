@@ -113,8 +113,8 @@ module ActiveSupport
           (?<weeks>-?\d+(?:[.,]\d+)?W)
         ) # Duration
       $/x) || raise(ISO8601ParsingError.new("Invalid ISO 8601 duration: #{iso8601duration}"))
-      sign  = (match[:sign].nil? || match[:sign] == '+') ? 1 : -1
-      parts = match.names.zip(match.captures).select{|_k,v| v.present? }.map do |k, v|
+      sign = match[:sign] == '-' ? -1 : 1
+      parts = match.names.zip(match.captures).reject{|_k,v| v.nil? }.map do |k, v|
         value = /\d+[\.,]\d+/ =~ v ? v.sub(',', '.').to_f : v.to_i
         [ k.to_sym, sign * value ]
       end
