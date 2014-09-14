@@ -1,3 +1,14 @@
+*   ActiveSupport::Duration can be parsed from and outputted to ISO 8601 duration format.
+    Parts of code and tests are taken from ISO8601 gem by Arnau Siches (@arnau).
+
+        ActiveSupport::Duration.parse('P3Y6M4DT12H30M5S')
+        # => 3 years, 6 months, 4 days, 12 hours, 30 minutes, and 5 seconds
+
+        (3.years + 3.days).iso8601
+        # => "P3Y3D"
+
+    *Andrey Novikov*
+
 *   Time#change can now change nanoseconds (:nsec) as a higher-precision
     alternative to microseconds (:usec).
 
