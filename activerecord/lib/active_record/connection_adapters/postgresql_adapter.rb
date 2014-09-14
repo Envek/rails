@@ -108,6 +108,7 @@ module ActiveRecord
         bit:         { name: "bit" },
         bit_varying: { name: "bit varying" },
         money:       { name: "money" },
+        interval:    { name: "interval" },
       }
 
       OID = PostgreSQL::OID #:nodoc:
@@ -461,7 +462,6 @@ module ActiveRecord
           m.register_type 'ltree', OID::SpecializedString.new(:ltree)
 
           # FIXME: why are we keeping these types as strings?
-          m.alias_type 'interval', 'varchar'
           m.alias_type 'path', 'varchar'
           m.alias_type 'line', 'varchar'
           m.alias_type 'polygon', 'varchar'
@@ -492,6 +492,11 @@ module ActiveRecord
             else
               OID::Decimal.new(precision: precision, scale: scale)
             end
+          end
+
+          m.register_type 'interval' do |_, _, sql_type|
+            precision = extract_precision(sql_type)
+            OID::Interval.new(precision: precision)
           end
 
           load_additional_types(m)

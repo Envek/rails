@@ -44,8 +44,8 @@ class PostgresqlDataTypeTest < ActiveRecord::TestCase
   end
 
   def test_data_type_of_time_types
-    assert_equal :string, @first_time.column_for_attribute(:time_interval).type
-    assert_equal :string, @first_time.column_for_attribute(:scaled_time_interval).type
+    assert_equal :interval, @first_time.column_for_attribute(:time_interval).type
+    assert_equal :interval, @first_time.column_for_attribute(:scaled_time_interval).type
   end
 
   def test_data_type_of_oid_types
@@ -61,8 +61,8 @@ class PostgresqlDataTypeTest < ActiveRecord::TestCase
   end
 
   def test_time_values
-    assert_equal '-1 years -2 days', @first_time.time_interval
-    assert_equal '-21 days', @first_time.scaled_time_interval
+    assert_equal 'P-1Y-2D', @first_time.time_interval.iso8601
+    assert_equal 'P-21D', @first_time.scaled_time_interval.iso8601
   end
 
   def test_oid_values
@@ -84,7 +84,7 @@ class PostgresqlDataTypeTest < ActiveRecord::TestCase
     @first_time.time_interval = '2 years 3 minutes'
     assert @first_time.save
     assert @first_time.reload
-    assert_equal '2 years 00:03:00', @first_time.time_interval
+    assert_equal 'P2YT3M', @first_time.time_interval.iso8601
   end
 
   def test_update_oid

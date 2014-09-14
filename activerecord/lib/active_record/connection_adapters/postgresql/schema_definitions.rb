@@ -87,6 +87,10 @@ module ActiveRecord
         def money(name, options)
           column(name, :money, options)
         end
+
+        def interval(name, options = {})
+          column(name, :interval, options)
+        end
       end
 
       class ColumnDefinition < ActiveRecord::ConnectionAdapters::ColumnDefinition

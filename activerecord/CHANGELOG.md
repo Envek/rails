@@ -1,3 +1,24 @@
+*   Add support for PostgreSQL `interval` datatype with conversion
+    from all PostgreSQL formats to `ActiveSupport::Duration` on record load
+    and transformation from `ActiveSupport::Duration` to ISO 8601 on save.
+    Also added support to define column in migrations and get it in schema
+    dump, optional column precision is supported.
+
+    Example:
+
+        create_table :events do |t|
+          t.string   :name
+          t.interval :duration
+        end
+
+        Event.create!(name: 'Rock Fest', duration: 2.days)
+        Event.last.duration # => 2 days
+        Event.last.duration.iso8601 # => "P2D"
+
+        Event.create!(duration: '2 mons 1 day') # Raw values still works
+
+    *Andrey Novikov*
+
 *   When a thread is killed, rollback the active transaction, instead of
     committing it during the stack unwind. Previously, we could commit half-
     completed work. This fix only works for Ruby 2.0+; on 1.9, we can't
