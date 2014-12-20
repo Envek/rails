@@ -106,7 +106,17 @@ module ActiveRecord
               ]
             end
 
-            scope_chain_items += [reflection.klass.send(:build_default_scope, ActiveRecord::Relation.new(reflection.klass, table))].compact
+            klass_scope =
+                if klass.current_scope
+                  klass.current_scope.clone
+                else
+                  relation = ActiveRecord::Relation.create(
+                      klass,
+                      table,
+                  )
+                  klass.send(:build_default_scope, relation)
+                end
+            scope_chain_items.concat [klass_scope].compact
 
             scope_chain_items.each do |item|
               unless item.is_a?(Relation)

@@ -1,3 +1,9 @@
+*   Allow `joins` to be unscoped.
+
+    Backport of #18109.
+
+    *Takashi Kokubun*, *Andrey Novikov*
+
 ## Rails 4.0.13 (January 6, 2015) ##
 
 *   Renaming a table in pg also renames the primary key index.
