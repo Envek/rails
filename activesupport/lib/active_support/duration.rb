@@ -1,5 +1,8 @@
 require 'active_support/core_ext/array/conversions'
 require 'active_support/core_ext/object/acts_like'
+require 'active_support/core_ext/time/calculations'
+require 'active_support/core_ext/date_and_time/calculations'
+require 'active_support/core_ext/date/calculations'
 
 module ActiveSupport
   # Provides accurate date and time measurements using Date#advance and
@@ -10,6 +13,7 @@ module ActiveSupport
     attr_accessor :value, :parts
 
     autoload :ISO8601Parser,     'active_support/duration/iso8601_parser'
+    autoload :ISO8601StringParser, 'active_support/duration/iso8601_string_parser'
     autoload :ISO8601Serializer, 'active_support/duration/iso8601_serializer'
 
     def initialize(value, parts) #:nodoc:
@@ -136,7 +140,7 @@ module ActiveSupport
     # See http://en.wikipedia.org/wiki/ISO_8601#Durations
     # This method allows negative parts to be present in pattern.
     # If invalid string is provided, it will raise +ActiveSupport::Duration::ISO8601Parser::ParsingError+.
-    def self.parse!(iso8601duration)
+    def self.regex_parse!(iso8601duration)
       parts = ISO8601Parser.new(iso8601duration).parts
       time  = ::Time.current
       new(time.advance(parts) - time, parts)
@@ -147,9 +151,21 @@ module ActiveSupport
     # See http://en.wikipedia.org/wiki/ISO_8601#Durations
     # This method allows negative parts to be present in pattern.
     # If invalid string is provided, nil will be returned.
-    def self.parse(iso8601duration)
-      parse!(iso8601duration)
+    def self.regex_parse(iso8601duration)
+      regex_parse!(iso8601duration)
     rescue ISO8601Parser::ParsingError
+      nil
+    end
+
+    def self.str_parse!(iso8601duration)
+      parts = ISO8601StringParser.new(iso8601duration).parse!
+      time  = ::Time.current
+      new(time.advance(parts) - time, parts)
+    end
+
+    def self.str_parse(iso8601duration)
+      str_parse!(iso8601duration)
+    rescue ISO8601StringParser::ParsingError
       nil
     end
 

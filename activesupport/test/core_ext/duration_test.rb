@@ -224,8 +224,8 @@ class DurationTest < ActiveSupport::TestCase
   def test_iso8601_parsing_wrong_patterns_with_raise
     invalid_patterns = ['', 'P', 'PT', 'P1YT', 'T', 'PW', 'P1Y1W', '~P1Y', '.P1Y', 'P1.5Y0.5M', 'P1.5Y1M', 'P1.5MT10.5S']
     invalid_patterns.each do |pattern|
-      assert_raise ActiveSupport::Duration::ISO8601Parser::ParsingError, pattern.inspect do
-        ActiveSupport::Duration.parse!(pattern)
+      assert_raise ActiveSupport::Duration::ISO8601StringParser::ParsingError, pattern.inspect do
+        ActiveSupport::Duration.str_parse!(pattern)
       end
     end
   end
@@ -233,7 +233,7 @@ class DurationTest < ActiveSupport::TestCase
   def test_iso8601_parsing_wrong_patterns_with_nil
     invalid_patterns = ['', 'P', 'PT', 'P1YT', 'T', 'PW', 'P1Y1W', '~P1Y', '.P1Y', 'P1.5Y0.5M', 'P1.5Y1M', 'P1.5MT10.5S']
     invalid_patterns.each do |pattern|
-      assert_nil ActiveSupport::Duration.parse(pattern), pattern.inspect
+      assert_nil ActiveSupport::Duration.str_parse(pattern), pattern.inspect
     end
   end
 
@@ -282,8 +282,16 @@ class DurationTest < ActiveSupport::TestCase
     # So we check that initially parsed and reparsed duration added to time will result in the same time
     time = Time.now
     patterns.each do |pattern|
+<<<<<<< HEAD
       duration = ActiveSupport::Duration.parse(pattern)
       assert_equal time+duration, time+ActiveSupport::Duration.parse(duration.iso8601), pattern.inspect
+||||||| merged common ancestors
+      duration = ActiveSupport::Duration.parse(pattern)
+      assert_equal time+duration, time+ActiveSupport::Duration.parse(duration.iso8601)
+=======
+      duration = ActiveSupport::Duration.str_parse(pattern)
+      assert_equal time+duration, time+ActiveSupport::Duration.str_parse(duration.iso8601)
+>>>>>>> Testing StringParser approach proposed by @pixeltrix
     end
   end
 
