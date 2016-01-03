@@ -5,7 +5,7 @@ module ActiveRecord
   module ConnectionAdapters
     # An abstract definition of a column in a table.
     class Column
-      attr_reader :name, :null, :sql_type_metadata, :default, :default_function, :collation
+      attr_reader :name, :null, :sql_type_metadata, :default, :default_function, :collation, :comment
 
       delegate :precision, :scale, :limit, :type, :sql_type, to: :sql_type_metadata, allow_nil: true
 
@@ -15,7 +15,8 @@ module ActiveRecord
       # +default+ is the type-casted default value, such as +new+ in <tt>sales_stage varchar(20) default 'new'</tt>.
       # +sql_type_metadata+ is various information about the type of the column
       # +null+ determines if this column allows +NULL+ values.
-      def initialize(name, default, sql_type_metadata = nil, null = true, default_function = nil, collation = nil)
+      # +comment+ specifies comment for DBA to be stored in database schema.
+      def initialize(name, default, sql_type_metadata = nil, null = true, default_function = nil, collation = nil, comment = nil)
         @name = name.freeze
         @sql_type_metadata = sql_type_metadata
         @null = null
@@ -23,6 +24,7 @@ module ActiveRecord
         @default_function = default_function
         @collation = collation
         @table_name = nil
+        @comment = comment
       end
 
       def has_default?

@@ -8,7 +8,7 @@ module ActiveRecord
     module ColumnDumper
       def column_spec(column)
         spec = prepare_column_options(column)
-        (spec.keys - [:name, :type]).each{ |k| spec[k].insert(0, "#{k}: ")}
+        (spec.keys - [:name, :type]).each{ |k| spec[k] && spec[k].insert(0, "#{k}: ")}
         spec
       end
 
@@ -46,12 +46,14 @@ module ActiveRecord
           spec[:collation] = collation
         end
 
+        spec[:comment] = column.comment.inspect if column.comment
+
         spec
       end
 
       # Lists the valid migration options
       def migration_keys
-        [:name, :limit, :precision, :scale, :default, :null, :collation]
+        [:name, :limit, :precision, :scale, :default, :null, :collation, :comment]
       end
 
       private

@@ -14,10 +14,12 @@ module ActiveRecord
           send m, o
         end
 
-        delegate :quote_column_name, :quote_table_name, :quote_default_expression, :type_to_sql,
-          :options_include_default?, :supports_indexes_in_create?, :supports_foreign_keys?, :foreign_key_options, to: :@conn
-        private :quote_column_name, :quote_table_name, :quote_default_expression, :type_to_sql,
-          :options_include_default?, :supports_indexes_in_create?, :supports_foreign_keys?, :foreign_key_options
+        delegate :quote_column_name, :quote_table_name, :quote_default_expression, :quote, :type_to_sql,
+          :options_include_default?, :supports_indexes_in_create?, :supports_foreign_keys?, :foreign_key_options,
+          :supports_comments?, :supports_comments_in_create?, to: :@conn
+        private :quote_column_name, :quote_table_name, :quote_default_expression, :quote, :type_to_sql,
+          :options_include_default?, :supports_indexes_in_create?, :supports_foreign_keys?, :foreign_key_options,
+          :supports_comments?, :supports_comments_in_create?
 
         private
 
@@ -54,6 +56,7 @@ module ActiveRecord
             end
 
             create_sql << "(#{statements.join(', ')}) " if statements.present?
+            add_table_options!(create_sql, table_options(o))
             create_sql << "#{o.options}"
             create_sql << " AS #{@conn.to_sql(o.as)}" if o.as
             create_sql
@@ -82,6 +85,16 @@ module ActiveRecord
             "DROP CONSTRAINT #{quote_column_name(name)}"
           end
 
+          def table_options(o)
+            options = {}
+            options[:comment] = o.comment if supports_comments?
+            options
+          end
+
+          def add_table_options!(sql, _options)
+            sql
+          end
+
           def column_options(o)
             column_options = {}
             column_options[:null] = o.null unless o.null.nil?
@@ -92,6 +105,7 @@ module ActiveRecord
             column_options[:auto_increment] = o.auto_increment
             column_options[:primary_key] = o.primary_key
             column_options[:collation] = o.collation
+            column_options[:comment] = o.comment if supports_comments?
             column_options
           end
 

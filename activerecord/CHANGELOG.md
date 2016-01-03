@@ -1,3 +1,20 @@
+*   Add support for database schema comments for tables, columns and indexes
+    for PostgreSQL and MySQL.
+
+    It allows to specify commentaries for database objects in migrations and
+    store them in database itself, allowing to see them with DBA tools and
+    in `db/schema.rb` file and thus automatically documents database schema:
+
+        create_table "pages", force: :cascade, comment: 'Arbitrary content pages' do |t|
+          # ...
+          t.string "path",   comment: "Path fragment of page URL used for routing"
+          t.string "locale", comment: "RFC 3066 locale code of website language section"
+          t.index ["locale", "path"], name: 'page_uri_index' comment: "Main index used to lookup page by it's URI."
+          # ...
+        end
+
+    *Andrey Novikov*
+
 *   Add short-hand methods for text and blob types in MySQL.
 
     In Pg and Sqlite3, `:text` and `:binary` have variable unlimited length.

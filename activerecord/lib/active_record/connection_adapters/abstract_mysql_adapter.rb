@@ -233,8 +233,8 @@ module ActiveRecord
         raise NotImplementedError
       end
 
-      def new_column(field, default, sql_type_metadata = nil, null = true, default_function = nil, collation = nil) # :nodoc:
-        Column.new(field, default, sql_type_metadata, null, default_function, collation)
+      def new_column(field, default, sql_type_metadata = nil, null = true, default_function = nil, collation = nil, comment = nil) # :nodoc:
+        Column.new(field, default, sql_type_metadata, null, default_function, collation, comment)
       end
 
       # Must return the MySQL error number from the exception, if the exception has an
@@ -557,7 +557,7 @@ module ActiveRecord
               mysql_index_type = row[:Index_type].downcase.to_sym
               index_type  = INDEX_TYPES.include?(mysql_index_type)  ? mysql_index_type : nil
               index_using = INDEX_USINGS.include?(mysql_index_type) ? mysql_index_type : nil
-              indexes << IndexDefinition.new(row[:Table], row[:Key_name], row[:Non_unique].to_i == 0, [], [], nil, nil, index_type, index_using)
+              indexes << IndexDefinition.new(row[:Table], row[:Key_name], row[:Non_unique].to_i == 0, [], [], nil, nil, index_type, index_using, row[:Index_comment].presence)
             end
 
             indexes.last.columns << row[:Column_name]
@@ -574,9 +574,17 @@ module ActiveRecord
         execute_and_free(sql, 'SCHEMA') do |result|
           each_hash(result).map do |field|
             type_metadata = fetch_type_metadata(field[:Type], field[:Extra])
-            new_column(field[:Field], field[:Default], type_metadata, field[:Null] == "YES", nil, field[:Collation])
+            new_column(field[:Field], field[:Default], type_metadata, field[:Null] == "YES", nil, field[:Collation], field[:Comment].presence)
           end
         end
+      end
+
+      def table_comment(table_name)
+        select_value(<<-MySQL.strip_heredoc, 'SCHEMA')
+          SELECT table_comment
+          FROM INFORMATION_SCHEMA.TABLES
+          WHERE table_name=#{quote(table_name)};
+        MySQL
       end
 
       def create_table(table_name, options = {}) #:nodoc:
@@ -663,8 +671,10 @@ module ActiveRecord
       end
 
       def add_index(table_name, column_name, options = {}) #:nodoc:
-        index_name, index_type, index_columns, _, index_algorithm, index_using = add_index_options(table_name, column_name, options)
-        execute "CREATE #{index_type} INDEX #{quote_column_name(index_name)} #{index_using} ON #{quote_table_name(table_name)} (#{index_columns}) #{index_algorithm}"
+        index_name, index_type, index_columns, _, index_algorithm, index_using, comment = add_index_options(table_name, column_name, options)
+        sql = "CREATE #{index_type} INDEX #{quote_column_name(index_name)} #{index_using} ON #{quote_table_name(table_name)} (#{index_columns}) #{index_algorithm}"
+        sql << " COMMENT #{quote(comment)}" if comment
+        execute sql
       end
 
       def foreign_keys(table_name)
@@ -702,7 +712,12 @@ module ActiveRecord
         raw_table_options = create_table_info.sub(/\A.*\n\) /m, '').sub(/\n\/\*!.*\*\/\n\z/m, '').strip
 
         # strip AUTO_INCREMENT
-        raw_table_options.sub(/(ENGINE=\w+)(?: AUTO_INCREMENT=\d+)/, '\1')
+        raw_table_options.sub!(/(ENGINE=\w+)(?: AUTO_INCREMENT=\d+)/, '\1')
+
+        # strip COMMENT
+        raw_table_options.sub!(/ COMMENT='.+'/, '')
+
+        raw_table_options
       end
 
       # Maps logical Rails types to MySQL-specific data types.
@@ -1039,8 +1054,8 @@ module ActiveRecord
         create_table_info_cache[table_name] ||= select_one("SHOW CREATE TABLE #{quote_table_name(table_name)}")["Create Table"]
       end
 
-      def create_table_definition(name, temporary = false, options = nil, as = nil) # :nodoc:
-        MySQL::TableDefinition.new(name, temporary, options, as)
+      def create_table_definition(name, temporary = false, options = nil, as = nil, comment = nil) # :nodoc:
+        MySQL::TableDefinition.new(name, temporary, options, as, comment)
       end
 
       def integer_to_sql(limit) # :nodoc:

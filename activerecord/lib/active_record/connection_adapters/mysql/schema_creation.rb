@@ -22,6 +22,13 @@ module ActiveRecord
           add_column_position!(change_column_sql, column_options(o.column))
         end
 
+        def add_table_options!(sql, options)
+          super
+          if options[:comment]
+            sql << "COMMENT #{quote(options[:comment])} "
+          end
+        end
+
         def column_options(o)
           column_options = super
           column_options[:charset] = o.charset
@@ -35,7 +42,11 @@ module ActiveRecord
           if options[:collation]
             sql << " COLLATE #{options[:collation]}"
           end
-          super
+          new_sql = super
+          if options[:comment]
+            new_sql << " COMMENT #{quote(options[:comment])}"
+          end
+          new_sql
         end
 
         def add_column_position!(sql, options)
@@ -48,8 +59,9 @@ module ActiveRecord
         end
 
         def index_in_create(table_name, column_name, options)
-          index_name, index_type, index_columns, _, _, index_using = @conn.add_index_options(table_name, column_name, options)
-          "#{index_type} INDEX #{quote_column_name(index_name)} #{index_using} (#{index_columns}) "
+          index_name, index_type, index_columns, _, _, index_using, comment = @conn.add_index_options(table_name, column_name, options)
+          index_option = " COMMENT #{quote(comment)}" if comment
+          "#{index_type} INDEX #{quote_column_name(index_name)} #{index_using} (#{index_columns})#{index_option} "
         end
       end
     end
